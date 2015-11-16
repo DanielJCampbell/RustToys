@@ -1,4 +1,7 @@
+extern crate rand;
+
 use std::fmt;
+use rand::{Rng, SeedableRng, StdRng};
 
 enum Cell {
     Wall,
@@ -39,8 +42,14 @@ impl MazeGen for Backtracker {
     fn gen(&self, width: usize, height: usize) -> Maze {
         let size = width*height;
         let mut result = Maze::new(width, height);
+        let mut rng = SeedableRng::from_seed(&[self.seed]);
+
         unimplemented!()
     }
+}
+
+fn run<T: MazeGen>(gen: T) {
+    unimplemented!()
 }
 
 impl fmt::Display for Maze {
