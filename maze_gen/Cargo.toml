@@ -4,4 +4,3 @@ version = "0.1.0"
 authors = ["campbedani3"]
 
 [dependencies]
-rand = { path = "/u/students/campbedani3/GIT/RustToys/maze_gen/rand-master" }
