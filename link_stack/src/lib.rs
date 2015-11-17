@@ -71,6 +71,20 @@ impl<T> Stack<T> {
     }
 }
 
+impl <T: PartialEq> Stack<T> {
+
+    pub fn contains(&self, elem: T) -> bool {
+        let mut cur = self.head.as_ref();
+        while let Some(boxed) = cur {
+            if boxed.elem == elem {
+                return true
+            }
+            cur = boxed.next.as_ref();
+        }
+        false
+    }
+}
+
 impl<T> Drop for Stack<T> {
     fn drop(&mut self) {
         let mut cur_link = self.head.take();
@@ -109,9 +123,10 @@ impl<'a, T> Iterator for IterMut<'a, T> {
     }
 }
 
-//No idea why this needs type information - perhaps a difference in implementation between Stack::new and Vec::new?
+//Mimics the behaviour of vec!, for a stack
 macro_rules! stack {
-
+    //No idea why this wants type information.
+    //Perhaps a difference in implementation between Stack::new and Vec::new?
     ($t: ty) => {{
         Stack::<$t>::new()
     }};
@@ -134,10 +149,41 @@ macro_rules! stack {
 
 }
 
+//Given an identifier pointing to a stack and a non-empty sequence of
+//expressions, add all the expressions to the stack (if typing permits)
 macro_rules! stack_add_all {
 
     ($s:ident, $($e: expr),+) => {{
         $($s.push($e);)*
+    }};
+}
+
+//Given an identifier pointing to a stack and a non-empty sequence of
+//expressions, return true if any of the expressions is in the stack, otherwise false
+macro_rules! stack_contains {
+    ($s:ident, $($e: expr),+) => {{
+        let mut result = false;
+        $(
+            for &elem in $s.iter() {
+                if $e == elem {
+                    result = true;
+                }
+            }
+        )*
+        result
+    }};
+}
+
+//As above, but returns true iff all elements are in the stack
+macro_rules! stack_contains_all {
+    ($s:ident, $($e: expr),+) => {{
+        let mut result = true;
+        $(
+            if !stack_contains!($s, $e) {
+                result = false;
+            }
+        )*
+        result
     }};
 }
 
@@ -184,6 +230,15 @@ mod test {
 
         assert_eq!(stack.peek(), Some(&3));
         assert_eq!(stack.peek_mut(), Some(&mut 3));
+    }
+
+    #[test]
+    fn contains(){
+        let mut stack = stack![i32, 1, 2, 3, 4, 5];
+        assert!(stack.contains(1));
+        assert!(!stack.contains(6));
+        stack.pop();
+        assert!(!stack.contains(5));
     }
 
     #[test]
@@ -245,5 +300,16 @@ mod test {
         assert_eq!(stack.pop(), Some(5));
         assert_eq!(stack.pop(), Some(4));
         assert_eq!(stack.pop(), Some(2));
-    } 
+    }
+
+    #[test]
+    fn macro_contains() {
+        let stack = stack![i32, 1, 2, 3];
+        assert!(stack_contains!(stack, 1, 3));
+        assert!(stack_contains!(stack, 2, 1, 3));
+        assert!(stack_contains!(stack, 4, 5, 6, 3));
+        assert!(!stack_contains!(stack, 4, 5));
+        assert!(stack_contains_all!(stack, 1, 2, 3));
+        assert!(!stack_contains_all!(stack, 1, 2, 3, 4));
+    }
 }
