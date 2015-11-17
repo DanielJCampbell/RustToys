@@ -109,10 +109,19 @@ impl<'a, T> Iterator for IterMut<'a, T> {
     }
 }
 
+//No idea why this needs type information - perhaps a difference in implementation between Stack::new and Vec::new?
 macro_rules! stack {
 
     ($t: ty) => {{
         Stack::<$t>::new()
+    }};
+
+    ($t: ty; $e:expr; $n:expr) => {{
+        let mut tmp = Stack::<$t>::new();
+        for _ in 0..$n {
+            tmp.push($e.clone());
+        }
+        tmp
     }};
 
     ($t: ty, $($e: expr),*) => {{
@@ -122,7 +131,11 @@ macro_rules! stack {
         )*
         tmp
     }};
+
+
 }
+
+
 
 
 #[cfg(test)]
@@ -208,7 +221,13 @@ mod test {
         assert_eq!(stack.pop(), Some(3));
         assert_eq!(stack.pop(), Some(2));
         assert_eq!(stack.pop(), Some(1));
-        let mut stack = stack![i32];
+
+        let stack = stack![i32];
         assert_eq!(stack.peek(), None);
+        
+        let mut stack = stack![i32; 0; 4];
+        for _ in 0..4 {
+            assert_eq!(stack.pop(), Some(0));
+        }
     } 
 }
