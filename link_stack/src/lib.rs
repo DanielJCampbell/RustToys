@@ -132,10 +132,14 @@ macro_rules! stack {
         tmp
     }};
 
-
 }
 
+macro_rules! stack_add_all {
 
+    ($s:ident, $($e: expr),+) => {{
+        $($s.push($e);)*
+    }};
+}
 
 
 #[cfg(test)]
@@ -229,5 +233,17 @@ mod test {
         for _ in 0..4 {
             assert_eq!(stack.pop(), Some(0));
         }
+    }
+
+    #[test]
+    fn macro_add_all() {
+        let mut stack = Stack::new();
+        stack_add_all!(stack, 1, 2, 3);
+        assert_eq!(stack.pop(), Some(3));
+        stack_add_all!(stack, 4, 5, 6);
+        assert_eq!(stack.pop(), Some(6));
+        assert_eq!(stack.pop(), Some(5));
+        assert_eq!(stack.pop(), Some(4));
+        assert_eq!(stack.pop(), Some(2));
     } 
 }
