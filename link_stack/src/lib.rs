@@ -109,6 +109,21 @@ impl<'a, T> Iterator for IterMut<'a, T> {
     }
 }
 
+macro_rules! stack {
+
+    ($t: ty) => {{
+        Stack::<$t>::new()
+    }};
+
+    ($t: ty, $($e: expr),*) => {{
+        let mut tmp : Stack<$t> = Stack::new();
+        $(
+            tmp.push($e);
+        )*
+        tmp
+    }};
+}
+
 
 #[cfg(test)]
 mod test {
@@ -186,4 +201,14 @@ mod test {
         assert_eq!(iter.next(), Some(&mut 2));
         assert_eq!(iter.next(), Some(&mut 1));
     }
+
+    #[test]
+    fn macro_stack() {
+        let mut stack = stack![i32, 1, 2, 3];
+        assert_eq!(stack.pop(), Some(3));
+        assert_eq!(stack.pop(), Some(2));
+        assert_eq!(stack.pop(), Some(1));
+        let mut stack = stack![i32];
+        assert_eq!(stack.peek(), None);
+    } 
 }
