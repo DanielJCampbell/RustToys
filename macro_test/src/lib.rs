@@ -55,51 +55,60 @@ macro_rules! tern {
 
 //It is necessary that def_fn takes an expr - the current value of count (initialise)
 
-
 //Define a function with optional parameters (assumes base form of function exists)
 macro_rules! def_fn {
 
-    //def_fn called with a required param first
+    //First call, required, empty
+    ($func: ident($param: ident)) => {{
+        let mut tmp_$param = None;
+        let &mut tmp_0 = &tmp_$param;
+        def_fn!(@int tmp_$param, tmp_0; $func($($rest)*));
+    }};
+
+    //first call, optional, empty
+    ($func: ident($param: ident = $val: expr)) => {{
+        let mut tmp_$param = $val;
+        let &mut tmp_0 = &tmp_$param;
+
+        def_fn!(@int tmp_$param, tmp_0; $func($($rest)*));
+    }};
+
+    //first call, required, non-empty
     ($func: ident($param: ident, $($rest: tt)*)) => {{
         let mut tmp_$param = None;
         let &mut tmp_0 = &tmp_$param;
-        def_fn_internal!(0; $func($($rest)*));
+        def_fn!(@int tmp_$param, tmp_0; $func($($rest)*));
     }};
 
-    //def_fn called with an optional param first
+    //first call, optional, non-empty
     ($func: ident($param: ident = $val: expr, $($rest: tt)*)) => {{
         let mut tmp_$param = $val;
         let &mut tmp_0 = &tmp_$param;
-        def_fn_internal!(0; $func($($rest)*));
-    }};
-}
 
-//This could be created inside the other macro, but too much duplication
-macro_rules! def_fn_internal {
+        def_fn!(@int tmp_$param, tmp_0; $func($($rest)*));
+    }};
 
     //Required param, empty
-    ($n: expr; $func:ident($param: ident)) => {{
+    ($($var: ident),*; $func:ident($param: ident)) => {{
 
     }};
 
     //Required param, non-empty
-    ($n: expr; $func:ident($param: ident, $($rest: tt)*)) => {{
+    ($($var: ident)*; $func:ident($param: ident, $($rest: tt)*)) => {{
 
     }};
 
-
-
     //Optional param, empty
-    ($n: expr; $func: ident($param: ident = $val: expr)) => {{
+    ($vars: tt; $func: ident($param: ident = $val: expr)) => {{
 
     }};
 
     //Optional param, non-empty
-    ($n: expr; $func: ident($param: ident = $val: expr, $($rest: tt)*)) => {{
+    ($vars: tt; $func: ident($param: ident = $val: expr, $($rest: tt)*)) => {{
 
     }};
 
-    //Empty
+    //Done
     ($n: expr; $func:ident()) => {{
 
     }};
